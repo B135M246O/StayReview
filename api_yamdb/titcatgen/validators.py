@@ -10,12 +10,12 @@ def this_year():
 def max_value_this_year(value):
     return MaxValueValidator(
         this_year(),
-        'Нельзя добавлять произведения из будущего.'
+        'Год открытия не может быть в будущем.'
     )(value)
 
 
 def min_value_first_year(value):
     return MinValueValidator(
         1,
-        'Нельзя добавлять произведения до нашей эры. :)'
+        'Год открытия должен быть положительным.'
     )(value)

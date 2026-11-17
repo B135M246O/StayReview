@@ -75,13 +75,17 @@ class CommentViewSet(ModelViewSet):
     )
 
     def get_queryset(self):
-        review_id = self.kwargs.get('review_id', 'title__id')
-        review = get_object_or_404(Review, id=review_id)
+        review = get_object_or_404(
+            Review, id=self.kwargs['review_id'],
+            title_id=self.kwargs['title_id'],
+        )
         return review.comments.all()
 
     def perform_create(self, serializer):
-        review_id = self.kwargs.get('review_id', 'title__id')
-        review = get_object_or_404(Review, id=review_id)
+        review = get_object_or_404(
+            Review, id=self.kwargs['review_id'],
+            title_id=self.kwargs['title_id'],
+        )
         serializer.save(author=self.request.user, review=review)
 
 
@@ -145,6 +149,7 @@ class APISignup(APIView):
     @staticmethod
     def send_email(data):
         email = EmailMessage(
+            subject='StayReview: подтверждение регистрации',
             body=data['email_body'],
             to=[data['to_email']]
         )

@@ -4,6 +4,10 @@ from titcatgen.models import Category, Genre, Title
 
 from .models import User
 
+admin.site.site_header = 'StayReview — управление каталогом'
+admin.site.site_title = 'StayReview'
+admin.site.index_title = 'Объекты, отзывы и пользователи'
+
 admin.site.register(User)
 admin.site.register(Category)
 admin.site.register(Title)

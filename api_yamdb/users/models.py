@@ -1,3 +1,5 @@
+from secrets import token_urlsafe
+
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
@@ -16,6 +18,10 @@ class RoleUser:
     ADMIN = 'admin'
 
 
+def generate_confirmation_code():
+    return token_urlsafe(18)
+
+
 class User(AbstractUser):
     username = models.CharField(
         validators=(validate_username,),
@@ -32,8 +38,7 @@ class User(AbstractUser):
     )
     confirmation_code = models.CharField(
         max_length=30,
-        null=True,
-        default='XXXX'
+        default=generate_confirmation_code
     )
     bio = models.TextField(
         blank=True,
@@ -53,7 +58,7 @@ class User(AbstractUser):
 
     @property
     def is_admin(self):
-        return self.role == RoleUser.ADMIN
+        return self.is_superuser or self.role == RoleUser.ADMIN
 
     @property
     def is_moderator(self):

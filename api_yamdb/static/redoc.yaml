@@ -1,24 +1,26 @@
 openapi: 3.0.2
 info:
-  title: 'YaMDb API'
-  version: ''
+  title: 'StayReview API'
+  version: '1.0'
   description: |
     запросы к API начинаются с `/api/v1/`
 
     # Описание
-    Проект **YaMDb** собирает отзывы пользователей на различные произведения.
+    Проект **StayReview** собирает отзывы пользователей на различные объекты размещения.
+
+    Поля `titles`, `genre` и `year` обозначают объекты размещения, особенности отдыха и год открытия.
 
     # Алгоритм регистрации пользователей
     1. Пользователь отправляет POST-запрос на добавление нового пользователя с параметрами `email` и `username` на эндпоинт `/api/v1/auth/signup/`.
-    2. **YaMDB** отправляет письмо с кодом подтверждения (`confirmation_code`) на адрес  `email`.
+    2. **StayReview** отправляет письмо с кодом подтверждения (`confirmation_code`) на адрес  `email`.
     3. Пользователь отправляет POST-запрос с параметрами `username` и `confirmation_code` на эндпоинт `/api/v1/auth/token/`, в ответе на запрос ему приходит `token` (JWT-токен).
     4. При желании пользователь отправляет PATCH-запрос на эндпоинт `/api/v1/users/me/` и заполняет поля в своём профайле (описание полей — в документации).
 
     # Пользовательские роли
-    - **Аноним** — может просматривать описания произведений, читать отзывы и комментарии.
-    - **Аутентифицированный пользователь** (`user`) — может, как и **Аноним**, читать всё, дополнительно он может публиковать отзывы и ставить оценку произведениям (фильмам/книгам/песенкам), может комментировать чужие отзывы; может редактировать и удалять **свои** отзывы и комментарии. Эта роль присваивается по умолчанию каждому новому пользователю.
+    - **Аноним** — может просматривать описания объектов размещения, читать отзывы и комментарии.
+    - **Аутентифицированный пользователь** (`user`) — может, как и **Аноним**, читать всё, дополнительно он может публиковать отзывы и ставить оценку объектам размещения (отелям/гостевым домам/хостелам), может комментировать чужие отзывы; может редактировать и удалять **свои** отзывы и комментарии. Эта роль присваивается по умолчанию каждому новому пользователю.
     - **Модератор** (`moderator`) — те же права, что и у **Аутентифицированного пользователя** плюс право удалять **любые** отзывы и комментарии.
-    - **Администратор** (`admin`) — полные права на управление всем контентом проекта. Может создавать и удалять произведения, категории и жанры. Может назначать роли пользователям. 
+    - **Администратор** (`admin`) — полные права на управление всем контентом проекта. Может создавать и удалять объекты размещения, категории и особенности отдыха. Может назначать роли пользователям.
     - **Суперюзер Django** — обладет правами администратора (`admin`)
 
 
@@ -29,11 +31,11 @@ tags:
   - name: AUTH
     description: Регистрация пользователей и выдача токенов
   - name: CATEGORIES
-    description: Категории (типы) произведений
+    description: Категории (типы) объектов размещения
   - name: GENRES
-    description: Категории жанров
+    description: Особенности отдыха
   - name: TITLES
-    description: Произведения, к которым пишут отзывы (определённый фильм, книга или песенка).
+    description: Объекты размещения, к которым пишут отзывы (отель, гостевой дом или хостел).
   - name: REVIEWS
     description: Отзывы
   - name: COMMENTS
@@ -229,15 +231,15 @@ paths:
     get:
       tags:
         - GENRES
-      operationId: Получение списка всех жанров
+      operationId: Получение списка всех особенностей отдыха
       description: |
-        Получить список всех жанров.
+        Получить список всех особенностей отдыха.
 
         Права доступа: **Доступно без токена**
       parameters:
       - name: search
         in: query
-        description: Поиск по названию жанра
+        description: Поиск по названию особенности отдыха
         schema:
           type: string
       responses:
@@ -263,13 +265,13 @@ paths:
     post:
       tags:
         - GENRES
-      operationId: Добавление жанра
+      operationId: Добавление особенности отдыха
       description: |
-        Добавить жанр.
+        Добавить особенность отдыха.
 
         Права доступа: **Администратор**.
 
-        Поле `slug` каждого жанра должно быть уникальным.
+        Поле `slug` каждой особенности отдыха должно быть уникальным.
       responses:
         201:
           description: Удачное выполнение запроса
@@ -295,16 +297,16 @@ paths:
     delete:
       tags:
         - GENRES
-      operationId: Удаление жанра
+      operationId: Удаление особенности отдыха
       description: |
-        Удалить жанр.
+        Удалить особенность отдыха.
 
         Права доступа: **Администратор**.
       parameters:
       - name: slug
         in: path
         required: true
-        description: Slug жанра
+        description: Slug особенности отдыха
         schema:
           type: string
       responses:
@@ -315,7 +317,7 @@ paths:
         403:
           description: Нет прав доступа
         404:
-          description: Жанр не найден
+          description: Особенность отдыха не найдена
       security:
       - jwt-token:
         - write:admin
@@ -324,7 +326,7 @@ paths:
     get:
       tags:
         - TITLES
-      operationId: Получение списка всех произведений
+      operationId: Получение списка всех объектов размещения
       description: |
         Получить список всех объектов.
 
@@ -337,12 +339,12 @@ paths:
             type: string
         - name: genre
           in: query
-          description: фильтрует по полю slug жанра
+          description: фильтрует по полю slug особенности отдыха
           schema:
             type: string
         - name: name
           in: query
-          description: фильтрует по названию произведения
+          description: фильтрует по названию объекта размещения
           schema:
             type: string
         - name: year
@@ -373,15 +375,15 @@ paths:
     post:
       tags:
         - TITLES
-      operationId: Добавление произведения
+      operationId: Добавление объекта размещения
       description: |
-        Добавить новое произведение.
+        Добавить новый объект размещения.
 
         Права доступа: **Администратор**.
 
-        Нельзя добавлять произведения, которые еще не вышли (год выпуска не может быть больше текущего).
+        Нельзя добавлять объекты размещения, которые ещё не открылись (год открытия не может быть больше текущего).
 
-        При добавлении нового произведения требуется указать уже существующие категорию и жанр.
+        При добавлении нового объекта размещения требуется указать уже существующие категорию и особенность отдыха.
       parameters: []
       requestBody:
         content:
@@ -419,9 +421,9 @@ paths:
     get:
       tags:
         - TITLES
-      operationId: Получение информации о произведении
+      operationId: Получение информации об объекте размещения
       description: |
-        Информация о произведении
+        Информация об объекте размещения
 
 
         Права доступа: **Доступно без токена**
@@ -437,9 +439,9 @@ paths:
     patch:
       tags:
         - TITLES
-      operationId: Частичное обновление информации о произведении
+      operationId: Частичное обновление информации об объекте размещения
       description: |
-        Обновить информацию о произведении
+        Обновить информацию об объекте размещения
 
 
         Права доступа: **Администратор**
@@ -467,9 +469,9 @@ paths:
     delete:
       tags:
         - TITLES
-      operationId: Удаление произведения
+      operationId: Удаление объекта размещения
       description: |
-        Удалить произведение.
+        Удалить объект размещения.
 
         Права доступа: **Администратор**.
       responses:
@@ -480,7 +482,7 @@ paths:
         403:
           description: Нет прав доступа
         404:
-          description: Произведение не найдено
+          description: Объект размещения не найден
       security:
       - jwt-token:
         - write:admin
@@ -490,7 +492,7 @@ paths:
       - name: title_id
         in: path
         required: true
-        description: ID произведения
+        description: ID объекта размещения
         schema:
           type: integer
     get:
@@ -522,13 +524,13 @@ paths:
                       items:
                         $ref: '#/components/schemas/Review'
         404:
-          description: Произведение не найдено
+          description: Объект размещения не найден
     post:
       tags:
         - REVIEWS
       operationId: Добавление нового отзыва
       description: |
-        Добавить новый отзыв. Пользователь может оставить только один отзыв на произведение.
+        Добавить новый отзыв. Пользователь может оставить только один отзыв на объект размещения.
 
         Права доступа: **Аутентифицированные пользователи.**
       requestBody:
@@ -552,7 +554,7 @@ paths:
         401:
           description: Необходим JWT-токен
         404:
-          description: Произведение не найдено
+          description: Объект размещения не найден
       security:
       - jwt-token:
         - write:user,moderator,admin
@@ -561,7 +563,7 @@ paths:
       - name: title_id
         in: path
         required: true
-        description: ID произведения
+        description: ID объекта размещения
         schema:
           type: integer
       - name: review_id
@@ -575,7 +577,7 @@ paths:
         - REVIEWS
       operationId: Полуение отзыва по id
       description: |
-        Получить отзыв по id для указанного произведения.
+        Получить отзыв по id для указанного объекта размещения.
 
         Права доступа: **Доступно без токена.**
       responses:
@@ -586,7 +588,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Review'
         404:
-          description: Произведение или отзыв не найден
+          description: Объект размещения или отзыв не найден
     patch:
       tags:
         - REVIEWS
@@ -618,7 +620,7 @@ paths:
         403:
           description: Нет прав доступа
         404:
-          description: Произведение не найдено
+          description: Объект размещения не найден
       security:
       - jwt-token:
         - write:user,moderator,admin
@@ -638,7 +640,7 @@ paths:
         403:
           description: Нет прав доступа
         404:
-          description: Произведение или отзыв не найдены
+          description: Объект размещения или отзыв не найдены
       security:
       - jwt-token:
         - write:user,moderator,admin
@@ -648,7 +650,7 @@ paths:
       - name: title_id
         in: path
         required: true
-        description: ID произведения
+        description: ID объекта размещения
         schema:
           type: integer
       - name: review_id
@@ -686,7 +688,7 @@ paths:
                       items:
                         $ref: '#/components/schemas/Comment'
         404:
-          description: Не найдено произведение или отзыв
+          description: Не найдено объект размещения или отзыв
     post:
       tags:
         - COMMENTS
@@ -716,7 +718,7 @@ paths:
         401:
           description: Необходим JWT-токен
         404:
-          description: Не найдено произведение или отзыв
+          description: Не найдено объект размещения или отзыв
       security:
       - jwt-token:
         - write:user,moderator,admin
@@ -726,7 +728,7 @@ paths:
       - name: title_id
         in: path
         required: true
-        description: ID произведения
+        description: ID объекта размещения
         schema:
           type: integer
       - name: review_id
@@ -757,7 +759,7 @@ paths:
                 $ref: '#/components/schemas/Comment'
           description: 'Удачное выполнение запроса'
         404:
-          description: Не найдено произведение, отзыв или комментарий
+          description: Не найдено объект размещения, отзыв или комментарий
     patch:
       tags:
         - COMMENTS
@@ -789,7 +791,7 @@ paths:
         403:
           description: Нет прав доступа
         404:
-          description: Не найдено произведение, отзыв или комментарий
+          description: Не найдено объект размещения, отзыв или комментарий
       security:
       - jwt-token:
         - write:user,moderator,admin
@@ -809,7 +811,7 @@ paths:
         403:
           description: Нет прав доступа
         404:
-          description: Не найдено произведение, отзыв или комментарий
+          description: Не найдено объект размещения, отзыв или комментарий
       security:
       - jwt-token:
         - write:user,moderator,admin
@@ -1075,14 +1077,14 @@ components:
       properties:
         id:
           type: integer
-          title: ID произведения
+          title: ID объекта размещения
           readOnly: true
         name:
           type: string
           title: Название
         year:
           type: integer
-          title: Год выпуска
+          title: Год открытия
         rating:
           type: integer
           readOnly: True
@@ -1111,7 +1113,7 @@ components:
           title: Название
         year:
           type: integer
-          title: Год выпуска
+          title: Год открытия
         description:
           type: string
           title: Описание
@@ -1119,7 +1121,7 @@ components:
           type: array
           items:
             type: string
-            title: Slug жанра
+            title: Slug особенности отдыха
         category:
           type: string
           title: Slug категории

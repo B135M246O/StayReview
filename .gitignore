@@ -151,3 +151,7 @@ dmypy.json
 posts/static/
 media/
 
+
+sent_emails/
+*.sqlite3
+*.sqlite3-journal

@@ -56,7 +56,6 @@ class ReviewSerializer(ModelSerializer):
         read_only=True,
     )
 
-    # нужен котекст, он не передаётся
     def validate(self, data):
         request = self.context['request']
         title_id = self.context.get('view').kwargs.get('title_id')
@@ -68,7 +67,7 @@ class ReviewSerializer(ModelSerializer):
                 author=request.user
             ).exists()
         ):
-            raise ValidationError('Один отзыв, не более!')
+            raise ValidationError('Вы уже оставили отзыв об этом объекте размещения.')
         return data
 
     class Meta:

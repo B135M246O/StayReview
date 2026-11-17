@@ -9,6 +9,7 @@ SCORE = [(i, i) for i in range(1, 11)]
 
 class Review(models.Model):
     score = models.IntegerField(
+        'Оценка проживания',
         choices=SCORE,
         blank=False,
         null=False,
@@ -18,12 +19,13 @@ class Review(models.Model):
     )
     title = models.ForeignKey(
         to=Title,
+        verbose_name='Объект размещения',
         on_delete=models.CASCADE,
         related_name='reviews',
         blank=True,
         null=True,
     )
-    text = models.TextField()
+    text = models.TextField('Текст отзыва')
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
@@ -35,6 +37,8 @@ class Review(models.Model):
 
     class Meta:
         ordering = ('score',)
+        verbose_name = 'Отзыв о проживании'
+        verbose_name_plural = 'Отзывы о проживании'
         constraints = (
             models.UniqueConstraint(
                 fields=('title', 'author'),
@@ -64,6 +68,8 @@ class Comment(models.Model):
 
     class Meta:
         ordering = ('text', )
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'
 
     def __str__(self):
         return f'{self.author} - {self.text[:15]}'

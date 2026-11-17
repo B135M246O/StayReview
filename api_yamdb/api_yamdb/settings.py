@@ -1,23 +1,18 @@
 import os
 from datetime import timedelta
 
+from django.core.management.utils import get_random_secret_key
+
 from dotenv import load_dotenv
 
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# SECURITY WARNING: keep the secret key used in production secret!
-path = '/home/abbadon/dev/infra_sp2/infra/.env'
-load_dotenv(path)
-SECRET_KEY = os.getenv('SECRET_KEY', default='32lkrjflsdfjlsjfl;dsjf;ldsjf')
+load_dotenv(os.path.join(BASE_DIR, '..', '.env'))
+SECRET_KEY = os.getenv('SECRET_KEY') or get_random_secret_key()
+DEBUG = os.getenv('DEBUG', 'false').lower() == 'true'
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1,[::1]').split(',')
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
-
-ALLOWED_HOSTS = ['*']
-
-
-# Application definition
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -48,6 +43,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'api_yamdb.urls'
 
+FIXTURE_DIRS = [BASE_DIR]
 TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
 TEMPLATES = [
     {
@@ -68,21 +64,24 @@ TEMPLATES = [
 WSGI_APPLICATION = 'api_yamdb.wsgi.application'
 
 
-# Database
 
-DATABASES = {
-    'default': {
-        'ENGINE': os.getenv('DB_ENGINE', default='django.db.backends.postgresql'),
-        'NAME': os.getenv('DB_NAME', default='postgres'),
-        'USER': os.getenv('POSTGRES_USER', default='postgres'),
-        'PASSWORD': os.getenv('POSTGRES_PASSWORD', default='2604rome'),
-        'HOST': os.getenv('DB_HOST', default='db'),
-        'PORT': os.getenv('DB_PORT', default='5432')
-    }
-}
+DB_ENGINE = os.getenv('DB_ENGINE', 'django.db.backends.postgresql')
+if DB_ENGINE == 'django.db.backends.sqlite3':
+    DATABASES = {'default': {
+        'ENGINE': DB_ENGINE,
+        'NAME': os.getenv('DB_NAME', os.path.join(BASE_DIR, 'db.sqlite3')),
+    }}
+else:
+    DATABASES = {'default': {
+        'ENGINE': DB_ENGINE,
+        'NAME': os.getenv('DB_NAME', 'stayreview'),
+        'USER': os.getenv('POSTGRES_USER', 'stayreview'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD', ''),
+        'HOST': os.getenv('DB_HOST', 'localhost'),
+        'PORT': os.getenv('DB_PORT', '5432'),
+    }}
 
 
-# Password validation
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -100,7 +99,6 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-# Internationalization
 
 LANGUAGE_CODE = 'ru'
 
@@ -108,18 +106,16 @@ TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 
-USE_L10N = True
 
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
 
 STATIC_URL = '/static/'
 
-# STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static/'),)
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_ROOT = os.path.join(BASE_DIR, 'collected_static')
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
